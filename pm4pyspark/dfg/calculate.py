@@ -4,7 +4,6 @@ from pm4py.visualization.dfg import factory as dfg_vis_factory
 
 
 def get_freq_tuples(df):
-
     df_reduced = df.orderBy("case:concept:name", "time:timestamp")
     df_reduced = df_reduced.select("case:concept:name", "concept:name")
     w = Window().partitionBy().orderBy("case:concept:name")
@@ -22,13 +21,13 @@ def get_freq_tuples(df):
 
     return freq_tuples
 
-def show_dfg(df):
+def show_dfg(df, variant):
     freq_tuples = get_freq_tuples(df)
-    gviz = dfg_vis_factory.apply(freq_tuples)
+    gviz = dfg_vis_factory.apply(freq_tuples, variant=variant)
     dfg_vis_factory.view(gviz)
 
-def save_dfg(df, path):
+def save_dfg(df, variant, path):
     parameters = {"format":"svg"}
     freq_tuples = get_freq_tuples(df)
-    gviz = dfg_vis_factory.apply(freq_tuples, parameters=parameters)
+    gviz = dfg_vis_factory.apply(freq_tuples,variant=variant, parameters=parameters)
     dfg_vis_factory.save(gviz, path)
