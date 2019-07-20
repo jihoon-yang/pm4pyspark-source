@@ -1,9 +1,8 @@
 import os
 import time
+import pandas as pd
 from tests.constants import INPUT_DATA_DIR
 from pm4pyspark.importer.csv import spark_df_imp as importer
-from pyspark.sql import SparkSession
-import pandas as pd
 
 
 spark_df_wo_timeconversion = importer.import_sparkdf_from_path_wo_timeconversion(os.path.join(INPUT_DATA_DIR, "running-example.csv"), header=True)
@@ -21,6 +20,12 @@ spark_df_sorted.show()
 spark_df_wo_timeconversion1.show(truncate=False)
 spark_df1.show()
 spark_df_sorted1.show()
+
+
+event_stream = importer.import_event_stream(os.path.join(INPUT_DATA_DIR, "running-example.csv"), parameters={"header": True, "sort": True, "inferSchema": True})
+log = importer.transform_event_stream_to_event_log(event_stream)
+print(log)
+
 
 '''
 spark = SparkSession.builder.getOrCreate()

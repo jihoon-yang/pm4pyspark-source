@@ -6,7 +6,7 @@ from pm4py.visualization.dfg import factory as dfg_vis_factory
 def get_freq_tuples(df):
     df_reduced = df.orderBy("case:concept:name", "time:timestamp")
     df_reduced = df_reduced.select("case:concept:name", "concept:name")
-    w = Window().partitionBy().orderBy("case:concept:name")
+    w = Window().partitionBy(df_reduced["case:concept:name"]).orderBy(df_reduced["case:concept:name"])
 
     df_reduced_shift = df_reduced.withColumn("case:concept:name_1", F.lag("case:concept:name", -1, 'NaN').over(w))
     df_reduced_shift = df_reduced_shift.withColumn("concept:name_1", F.lag("concept:name", -1, 'NaN').over(w))
@@ -21,13 +21,17 @@ def get_freq_tuples(df):
 
     return freq_tuples
 
-def show_dfg(df, variant):
+def show_dfg(df, log=None, variant="frequency"):
     freq_tuples = get_freq_tuples(df)
-    gviz = dfg_vis_factory.apply(freq_tuples, variant=variant)
+    gviz = dfg_vis_factory.apply(freq_tuples, log=log, variant=variant)
     dfg_vis_factory.view(gviz)
 
-def save_dfg(df, variant, path):
-    parameters = {"format":"svg"}
+def save_dfg(df, path, log=None, variant="frequency", parameters=None):
+    if parameters is None:
+        parameters = {"format":"svg"}
+    else:
+        parameters = parameters
+
     freq_tuples = get_freq_tuples(df)
-    gviz = dfg_vis_factory.apply(freq_tuples,variant=variant, parameters=parameters)
+    gviz = dfg_vis_factory.apply(freq_tuples, log=log, variant=variant, parameters=parameters)
     dfg_vis_factory.save(gviz, path)
