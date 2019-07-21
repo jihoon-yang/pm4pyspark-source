@@ -11,7 +11,7 @@ from pm4pyspark.importer.csv import spark_df_imp as importer
 
 def filter_traces_contained(df, dt1, dt2, parameters=None):
     '''
-    Get traces that are contained in the given interval
+    Gets traces that are contained in the given interval
     '''
 
     if parameters is None:
@@ -37,9 +37,8 @@ def filter_traces_contained(df, dt1, dt2, parameters=None):
 
 def filter_traces_intersecting(df, dt1, dt2, parameters=None):
     '''
-    Filter traces intersecting the given interval
+    Filters traces intersecting the given interval
     '''
-    df.cache()
 
     if parameters is None:
         parameters = {}
@@ -74,6 +73,10 @@ def filter_traces_intersecting(df, dt1, dt2, parameters=None):
     return stacked
 
 def apply_events(df, dt1, dt2, parameters=None):
+    '''
+    Gets a new Spark DataFrame with all the events contained in the given interval
+    '''
+
     if parameters is None:
         parameters = {}
     timestamp_key = parameters[
