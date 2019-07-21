@@ -1,3 +1,3 @@
-CASEID_KEY = 'case:concept:name'
-ACTIVITY_KEY = 'concept:name'
-TIMESTAMP_KEY = 'time:timestamp'
+DEFAULT_CASEID_KEY = 'case:concept:name'
+DEFAULT_ACTIVITY_KEY = 'concept:name'
+DEFAULT_TIMESTAMP_KEY = 'time:timestamp'
