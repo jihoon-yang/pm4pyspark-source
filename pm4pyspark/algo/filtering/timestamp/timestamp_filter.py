@@ -1,12 +1,11 @@
+import pyspark.sql.functions as F
+
+from pm4py.algo.filtering.common.filtering_constants import CASE_CONCEPT_NAME
 from pm4py.algo.filtering.common.timestamp.timestamp_common import get_dt_from_string
 from pm4py.util.constants import PARAMETER_CONSTANT_TIMESTAMP_KEY, PARAMETER_CONSTANT_CASEID_KEY
 from pm4py.objects.log.util.xes import DEFAULT_TIMESTAMP_KEY
-from pm4py.algo.filtering.common.filtering_constants import CASE_CONCEPT_NAME
-
-import pyspark.sql.functions as F
-from pyspark.sql.window import Window
-
 from pm4pyspark.importer.csv import spark_df_imp as importer
+from pyspark.sql.window import Window
 
 
 def filter_traces_contained(df, dt1, dt2, parameters=None):

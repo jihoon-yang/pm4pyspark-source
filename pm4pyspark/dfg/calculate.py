@@ -1,6 +1,7 @@
 import pyspark.sql.functions as F
-from pyspark.sql.window import Window
+
 from pm4py.visualization.dfg import factory as dfg_vis_factory
+from pyspark.sql.window import Window
 
 
 def get_freq_tuples(df):
@@ -38,7 +39,7 @@ def save_dfg(df, path, log=None, variant="frequency", parameters=None):
     '''
     Saves a DFG of the given Spark DataFrame and its EventLog (optional) at the given path.
     '''
-    
+
     if parameters is None:
         parameters = {"format":"svg"}
     else:

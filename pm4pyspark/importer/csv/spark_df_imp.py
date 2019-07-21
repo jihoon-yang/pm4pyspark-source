@@ -1,9 +1,11 @@
-from dateutil import parser, tz
-from pyspark.sql import SparkSession
 import pyspark.sql.functions as F
-from pyspark.sql.types import *
+
+from dateutil import parser, tz
 from pm4py.objects.log import log as log_instance
 from pm4py.objects.conversion.log.versions import to_event_log
+from pyspark.sql import SparkSession
+from pyspark.sql.types import *
+
 
 def convert_timestamp_to_utc_in_df(df, timest_columns=None):
     '''
