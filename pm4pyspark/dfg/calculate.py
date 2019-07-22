@@ -12,10 +12,8 @@ def get_freq_tuples(df):
     df_reduced = df.orderBy("case:concept:name", "time:timestamp")
     df_reduced = df_reduced.select("case:concept:name", "concept:name")
     w = Window().partitionBy(df_reduced["case:concept:name"]).orderBy(df_reduced["case:concept:name"])
-
     df_reduced_shift = df_reduced.withColumn("case:concept:name_1", F.lag("case:concept:name", -1, 'NaN').over(w))
     df_reduced_shift = df_reduced_shift.withColumn("concept:name_1", F.lag("concept:name", -1, 'NaN').over(w))
-
     df_successive_rows = df_reduced_shift.filter(df_reduced_shift["case:concept:name"] == df_reduced_shift["case:concept:name_1"])
     directly_follows_grouping = df_successive_rows.groupby("concept:name", "concept:name_1")
     directly_follows_grouping = directly_follows_grouping.count()
@@ -44,7 +42,6 @@ def save_dfg(df, path, log=None, variant="frequency", parameters=None):
         parameters = {"format":"svg"}
     else:
         parameters = parameters
-
     freq_tuples = get_freq_tuples(df)
     gviz = dfg_vis_factory.apply(freq_tuples, log=log, variant=variant, parameters=parameters)
     dfg_vis_factory.save(gviz, path)

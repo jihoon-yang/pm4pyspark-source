@@ -23,6 +23,7 @@ def convert_timestamp_to_utc_in_df(df, timest_columns=None):
 
     return df
 
+
 def import_sparkdf_from_path_wo_timeconversion(path, sep=None, quote=None, header=None, inferSchema=None):
     '''
     Imports a Spark DataFrame from the given path of CSV format file (without time conversion)
@@ -33,12 +34,15 @@ def import_sparkdf_from_path_wo_timeconversion(path, sep=None, quote=None, heade
 
     return spark_df
 
-def import_sparkdf_from_path(path, sep=None, quote=None, header=None, inferSchema=None, timest_columns=None, sort=False, sort_field="time:timestamp", ascending=True):
+
+def import_sparkdf_from_path(path, sep=None, quote=None, header=None, inferSchema=None, timest_columns=None,
+                             sort=False, sort_field="time:timestamp", ascending=True):
     '''
     Imports a Spark DataFrame from the given path of CSV format file (with time conversion)
     '''
 
-    spark_df = import_sparkdf_from_path_wo_timeconversion(path, sep=sep, quote=quote, header=header, inferSchema=inferSchema)
+    spark_df = import_sparkdf_from_path_wo_timeconversion(path, sep=sep, quote=quote, header=header,
+                                                          inferSchema=inferSchema)
     spark_df = convert_timestamp_to_utc_in_df(spark_df, timest_columns=timest_columns)
 
     if sort and sort_field:
@@ -48,6 +52,7 @@ def import_sparkdf_from_path(path, sep=None, quote=None, header=None, inferSchem
             spark_df = spark_df.orderBy("time:timestamp", ascending=False)
 
     return spark_df
+
 
 def import_event_stream(path, parameters=None):
     '''
@@ -82,8 +87,9 @@ def import_event_stream(path, parameters=None):
     if "ascending" in parameters:
         ascending = parameters["ascending"]
 
-    spark_df = import_sparkdf_from_path(path, sep=sep, quote=quote, header=header, inferSchema=inferSchema, timest_columns=timest_columns, sort=sort, sort_field=sort_field, ascending=ascending)
-
+    spark_df = import_sparkdf_from_path(path, sep=sep, quote=quote, header=header, inferSchema=inferSchema,
+                                        timest_columns=timest_columns, sort=sort, sort_field=sort_field,
+                                        ascending=ascending)
     rdd = spark_df.rdd.map(lambda row: row.asDict())
     event_stream = rdd.collect()
     event_stream = log_instance.EventStream(event_stream, attributes={'origin': 'csv'})
@@ -92,11 +98,14 @@ def import_event_stream(path, parameters=None):
     #return pair_rdd_group.collect()
     return event_stream
 
+
 def transform_event_stream_to_event_log(event_stream, include_case_attributes=True, enable_deepcopy=False):
     '''
     Transforms an EventStream to an EventLog
     '''
 
-    log = to_event_log.transform_event_stream_to_event_log(event_stream, include_case_attributes=include_case_attributes, enable_deepcopy=enable_deepcopy)
+    log = to_event_log.transform_event_stream_to_event_log(event_stream,
+                                                           include_case_attributes=include_case_attributes,
+                                                           enable_deepcopy=enable_deepcopy)
 
     return log
