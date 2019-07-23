@@ -74,7 +74,7 @@ def apply(df, values, parameters=None):
     return filter_df_on_attribute_values(df, values, case_id_glue=case_id_glue, attribute_key=attribute_key,
                                          positive=positive)
 
-#TODO
+
 def apply_auto_filter(df, parameters=None):
     if parameters is None:
         parameters = {}
