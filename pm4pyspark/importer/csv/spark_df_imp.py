@@ -1,3 +1,4 @@
+import datetime
 import pyspark.sql.functions as F
 
 from dateutil import parser, tz
@@ -17,8 +18,9 @@ def convert_timestamp_to_utc_in_df(df, timest_columns=None):
     for col in timest_columns:
         if df.schema[col].dataType == StringType():
             utc_zone =  tz.gettz("UTC")
-            func = F.udf(lambda x: parser.parse(x).astimezone(utc_zone).isoformat(), StringType())
-            df = df.withColumn(col + "_utc", F.to_timestamp(func(df[col]), "yyyy-MM-dd'T'HH:mm:ss"))
+            func = F.udf(lambda x: parser.parse(x).astimezone(utc_zone).isoformat(timespec='milliseconds'), StringType())
+            func2 = F.udf(lambda x: datetime.datetime.strptime(''.join(x[:-6].rsplit(':', 0)), '%Y-%m-%dT%H:%M:%S.%f'), TimestampType())
+            df = df.withColumn(col + "_utc", func2(func(df[col])))
             df = df.drop(col).withColumnRenamed(col + "_utc", col)
 
     return df
