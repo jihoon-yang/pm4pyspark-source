@@ -1,0 +1,1 @@
+from pm4pyspark.algo.filtering.end_activities import end_activities_filter
