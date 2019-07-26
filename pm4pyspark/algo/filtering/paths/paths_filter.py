@@ -7,10 +7,12 @@ from pm4py.util.constants import PARAMETER_CONSTANT_ATTRIBUTE_KEY
 from pm4py.util.constants import PARAMETER_CONSTANT_CASEID_KEY
 from pyspark.sql.window import Window
 
+
+
+
 def apply(df, paths, parameters=None):
-    '''
-    Apply a filter on traces containing / not containing a path
-    '''
+    """Applies a filter on traces containing / not containing a path
+    """
 
     if parameters is None:
         parameters = {}

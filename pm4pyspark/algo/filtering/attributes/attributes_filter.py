@@ -5,10 +5,12 @@ from pm4py.util.constants import PARAMETER_CONSTANT_ATTRIBUTE_KEY
 from pm4py.util.constants import PARAMETER_CONSTANT_CASEID_KEY
 from pm4py.util.constants import PARAM_MOST_COMMON_VARIANT
 
+
+
+
 def apply_numeric_events(df, int1, int2, parameters=None):
-    '''
-    Apply a filter on events (numerical filter)
-    '''
+    """Applies a filter on events (numerical filter)
+    """
 
     if parameters is None:
         parameters = {}
@@ -22,9 +24,8 @@ def apply_numeric_events(df, int1, int2, parameters=None):
 
 
 def apply_numeric(df, int1, int2, parameters=None):
-    '''
-    Filter dataframe on attribute values (filter cases)
-    '''
+    """Filters the Spark dataframe on attribute values (filter cases)
+    """
 
     if parameters is None:
         parameters = {}
@@ -42,9 +43,8 @@ def apply_numeric(df, int1, int2, parameters=None):
 
 
 def apply_events(df, values, parameters=None):
-    '''
-    Filter dataframe on attribute values (filter events)
-    '''
+    """Filters the Spark dataframe on attribute values (filter events)
+    """
 
     if parameters is None:
         parameters = {}
@@ -58,9 +58,8 @@ def apply_events(df, values, parameters=None):
 
 
 def apply(df, values, parameters=None):
-    '''
-    Filter dataframe on attribute values (filter traces)
-    '''
+    """Filters the Spark dataframe on attribute values (filter traces)
+    """
 
     if parameters is None:
         parameters = {}
@@ -76,6 +75,8 @@ def apply(df, values, parameters=None):
 
 
 def apply_auto_filter(df, parameters=None):
+    """Applies auto filter on activity values
+    """
     if parameters is None:
         parameters = {}
 
@@ -100,9 +101,8 @@ def apply_auto_filter(df, parameters=None):
 
 
 def get_attribute_values(df, attribute_key, parameters=None):
-    '''
-    Return list of attribute values contained in the specified column of the CSV
-    '''
+    """Returns a list of attribute values contained in the specified column of the CSV
+    """
 
     if parameters is None:
         parameters = {}
@@ -115,9 +115,8 @@ def get_attribute_values(df, attribute_key, parameters=None):
 
 def filter_df_on_attribute_values(df, values, case_id_glue="case:concept:name", attribute_key="concept:name",
                                   positive=True):
-    '''
-    Filter dataframe on attribute values
-    '''
+    """Filters the Spark dataframe on attribute values
+    """
 
     df_filtered = df.filter(df[attribute_key].isin(values))
     filtered_index = df_filtered.select(case_id_glue).rdd.map(lambda x: x[0]).collect()
@@ -128,9 +127,8 @@ def filter_df_on_attribute_values(df, values, case_id_glue="case:concept:name", 
 
 def filter_df_keeping_activ_exc_thresh(df, thresh, act_count0=None, activity_key="concept:name",
                                        most_common_variant=None):
-    '''
-    Filter a dataframe keeping activities exceeding the threshold
-    '''
+    """Filters the Spark dataframe keeping activities exceeding the threshold
+    """
 
     if most_common_variant is None:
         most_common_variant = []
@@ -144,9 +142,8 @@ def filter_df_keeping_activ_exc_thresh(df, thresh, act_count0=None, activity_key
 
 
 def filter_df_keeping_spno_activities(df, activity_key="concept:name", max_no_activities=25):
-    '''
-    Filter a dataframe on the specified number of attributes
-    '''
+    """Filters the Spark dataframe on the specified number of attributes
+    """
 
     activity_values_dict = get_attribute_values(df, activity_key)
     activity_values_ordered_list = []
@@ -163,38 +160,36 @@ def filter_df_keeping_spno_activities(df, activity_key="concept:name", max_no_ac
 
 
 def get_kde_numeric_attribute(df, attribute, parameters=None):
-    '''
-    Gets the KDE estimation for the distribution of a numeric attribute values
-    '''
+    """Gets the KDE estimation for the distribution of a numeric attribute values
+    """
     values = df.select(attribute).rdd.map(lambda row : row[0]).collect()
 
     return attributes_common.get_kde_numeric_attribute(values, parameters=parameters)
 
 
 def get_kde_numeric_attribute_json(df, attribute, parameters=None):
-    '''
+    """
     Gets the KDE estimation for the distribution of a numeric attribute values
     (expressed as JSON)
-    '''
+    """
     values = df.select(attribute).rdd.map(lambda row : row[0]).collect()
 
     return attributes_common.get_kde_numeric_attribute_json(values, parameters=parameters)
 
 
 def get_kde_date_attribute(df, attribute=DEFAULT_TIMESTAMP_KEY, parameters=None):
-    '''
-    Gets the KDE estimation for the distribution of a date attribute values
-    '''
+    """Gets the KDE estimation for the distribution of a date attribute values
+    """
     date_values = df.select(attribute).rdd.map(lambda row : row[0]).collect()
 
     return attributes_common.get_kde_date_attribute(date_values, parameters=parameters)
 
 
 def get_kde_date_attribute_json(df, attribute=DEFAULT_TIMESTAMP_KEY, parameters=None):
-    '''
+    """
     Gets the KDE estimation for the distribution of a date attribute values
     (expressed as JSON)
-    '''
+    """
     values = df.select(attribute).rdd.map(lambda row : row[0]).collect()
 
     return attributes_common.get_kde_date_attribute_json(values, parameters=parameters)

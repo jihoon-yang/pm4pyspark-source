@@ -12,10 +12,10 @@ from pm4py.util.constants import GROUPED_DATAFRAME
 
 
 
+
 def apply(df, values, parameters=None):
-    '''
-    Filter dataframe on end activities
-    '''
+    """Filters the Spark dataframe on end activities
+    """
     if parameters is None:
         parameters = {}
     timestamp_key = parameters[
@@ -32,9 +32,8 @@ def apply(df, values, parameters=None):
 
 
 def apply_auto_filter(df, parameters=None):
-    '''
-    Apply auto filter on end activities
-    '''
+    """Applies auto filter on end activities
+    """
     if parameters is None:
         parameters = {}
 
@@ -71,9 +70,8 @@ def apply_auto_filter(df, parameters=None):
 
 
 def get_end_activities(df, parameters=None):
-    '''
-     Get end activities count
-    '''
+    """Gets end activities count
+    """
 
     if parameters is None:
         parameters = {}
@@ -97,9 +95,8 @@ def get_end_activities(df, parameters=None):
 
 def filter_df_on_end_activities(df, values, timestamp_key=DEFAULT_TIMESTAMP_KEY, case_id_glue=CASE_CONCEPT_NAME,
                                 activity_key=DEFAULT_NAME_KEY, grouped_df=None, positive=True):
-    '''
-    Filter dataframe on end activities
-    '''
+    """Filters the Spark dataframe on end activities
+    """
 
     if grouped_df is None:
         grouped_df = df.groupby(case_id_glue)
@@ -118,9 +115,8 @@ def filter_df_on_end_activities(df, values, timestamp_key=DEFAULT_TIMESTAMP_KEY,
 def filter_df_on_end_activities_nocc(df, nocc, ea_count0=None, timestamp_key=DEFAULT_TIMESTAMP_KEY,
                                      case_id_glue=CASE_CONCEPT_NAME, activity_key=DEFAULT_NAME_KEY,
                                      grouped_df=None, return_dict=False, most_common_variant=None):
-    '''
-    Filter dataframe on end activities number of occurrences
-    '''
+    """Filters the Spark dataframe on end activities number of occurrences
+    """
 
     if most_common_variant is None:
         most_common_variant = []

@@ -13,9 +13,8 @@ from pyspark.sql.window import Window
 
 
 def apply(df, values, parameters=None):
-    '''
-    Filter dataframe on start activities
-    '''
+    """Filters the Spark dataframe on start activities
+    """
 
     if parameters is None:
         parameters = {}
@@ -34,9 +33,8 @@ def apply(df, values, parameters=None):
 
 
 def apply_auto_filter(df, parameters=None):
-    '''
-    Apply auto filter on end activities
-    '''
+    """Applies auto filter on end activities
+    """
 
     if parameters is None:
         parameters = {}
@@ -60,9 +58,8 @@ def apply_auto_filter(df, parameters=None):
 
 
 def get_start_activities(df, parameters=None):
-    '''
-    Get start activities count
-    '''
+    """Gets start activities count
+    """
 
     if parameters is None:
         parameters = {}
@@ -92,9 +89,8 @@ def get_start_activities(df, parameters=None):
 
 def filter_df_on_start_activities(df, values, timestamp_key=DEFAULT_TIMESTAMP_KEY, case_id_glue=CASE_CONCEPT_NAME,
                                   activity_key=DEFAULT_NAME_KEY, grouped_df=None, positive=True):
-    '''
-    Filter dataframe on start activities
-    '''
+    """Filters the Spark dataframe on start activities
+    """
 
     if grouped_df is None:
         grouped_df = df.groupby(case_id_glue)
@@ -119,9 +115,8 @@ def filter_df_on_start_activities(df, values, timestamp_key=DEFAULT_TIMESTAMP_KE
 
 def filter_df_on_start_activities_nocc(df, nocc, sa_count0=None, timestamp_key=DEFAULT_TIMESTAMP_KEY,
                                        case_id_glue=CASE_CONCEPT_NAME, activity_key=DEFAULT_NAME_KEY, grouped_df=None):
-    '''
-    Filter dataframe on start activities number of occurrences
-    '''
+    """Filters the Spark dataframe on start activities number of occurrences
+    """
 
     if grouped_df is None:
         grouped_df = df.groupby(case_id_glue)

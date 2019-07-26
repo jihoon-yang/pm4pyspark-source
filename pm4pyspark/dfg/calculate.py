@@ -4,10 +4,11 @@ from pm4py.visualization.dfg import factory as dfg_vis_factory
 from pyspark.sql.window import Window
 
 
+
+
 def get_freq_tuples(df):
-    '''
-    Gets frequency tuples from a Spark DataFrame
-    '''
+    """Gets frequency tuples from the Spark DataFrame
+    """
 
     df_reduced = df.orderBy("case:concept:name", "time:timestamp")
     df_reduced = df_reduced.select("case:concept:name", "concept:name")
@@ -25,18 +26,16 @@ def get_freq_tuples(df):
     return freq_tuples
 
 def show_dfg(df, log=None, variant="frequency"):
-    '''
-    Returns a DFG of the given Spark DataFrame and its EventLog (optional).
-    '''
+    """Returns a DFG of the given Spark DataFrame and its EventLog (optional).
+    """
 
     freq_tuples = get_freq_tuples(df)
     gviz = dfg_vis_factory.apply(freq_tuples, log=log, variant=variant)
     dfg_vis_factory.view(gviz)
 
 def save_dfg(df, path, log=None, variant="frequency", parameters=None):
-    '''
-    Saves a DFG of the given Spark DataFrame and its EventLog (optional) at the given path.
-    '''
+    """Saves a DFG of the given Spark DataFrame and its EventLog (optional) at the given path.
+    """
 
     if parameters is None:
         parameters = {"format":"svg"}

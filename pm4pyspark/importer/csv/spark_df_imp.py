@@ -8,10 +8,11 @@ from pyspark.sql import SparkSession
 from pyspark.sql.types import *
 
 
+
+
 def convert_timestamp_to_utc_in_df(df, timest_columns=None):
-    '''
-    Converts datatype of column "time:timestamp" from StringType to TimestampType as UTC timezone
-    '''
+    """Converts datatype of column "time:timestamp" from `StringType` to `TimestampType` as UTC timezone
+    """
 
     if timest_columns is None:
         timest_columns = {"time:timestamp"}
@@ -27,9 +28,8 @@ def convert_timestamp_to_utc_in_df(df, timest_columns=None):
 
 
 def import_sparkdf_from_path_wo_timeconversion(path, sep=None, quote=None, header=None, inferSchema=None):
-    '''
-    Imports a Spark DataFrame from the given path of CSV format file (without time conversion)
-    '''
+    """Imports a Spark DataFrame from the given path of CSV format file (without time conversion)
+    """
 
     spark = SparkSession.builder.getOrCreate()
     spark_df = spark.read.csv(path, sep=sep, quote=quote, header=header, inferSchema=inferSchema)
@@ -39,9 +39,8 @@ def import_sparkdf_from_path_wo_timeconversion(path, sep=None, quote=None, heade
 
 def import_sparkdf_from_path(path, sep=None, quote=None, header=None, inferSchema=None, timest_columns=None,
                              sort=False, sort_field="time:timestamp", ascending=True):
-    '''
-    Imports a Spark DataFrame from the given path of CSV format file (with time conversion)
-    '''
+    """Imports a Spark DataFrame from the given path of CSV format file (with time conversion)
+    """
 
     spark_df = import_sparkdf_from_path_wo_timeconversion(path, sep=sep, quote=quote, header=header,
                                                           inferSchema=inferSchema)
@@ -57,9 +56,8 @@ def import_sparkdf_from_path(path, sep=None, quote=None, header=None, inferSchem
 
 
 def import_event_stream(path, parameters=None):
-    '''
-    Imports an EventStream from the given path of CSV format file
-    '''
+    """Imports an `EventStream` from the given path of CSV format file
+    """
 
     sep = None
     quote = None
@@ -102,9 +100,8 @@ def import_event_stream(path, parameters=None):
 
 
 def transform_event_stream_to_event_log(event_stream, include_case_attributes=True, enable_deepcopy=False):
-    '''
-    Transforms an EventStream to an EventLog
-    '''
+    """Transforms an `EventStream` to an `EventLog`
+    """
 
     log = to_event_log.transform_event_stream_to_event_log(event_stream,
                                                            include_case_attributes=include_case_attributes,
