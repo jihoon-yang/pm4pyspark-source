@@ -150,8 +150,7 @@ def get_cases_description(df, parameters=None):
         stacked_df = stacked_df.orderBy(sort_by_column, ascending=sort_ascending)
     if max_ret_cases is not None:
         stacked_df = stacked_df.limit(max_ret_cases)
-    rdd = stacked_df.rdd.map(lambda row: row.asDict())
-    rdd = rdd.map(lambda x: (x[case_id_glue], {'caseDuration': x['caseDuration'],
+    rdd = stacked_df.rdd.map(lambda x: (x[case_id_glue], {'caseDuration': x['caseDuration'],
                                                'startTime': x['startTime'],
                                                'endTime': x['endTime']}))
     return rdd.collectAsMap()

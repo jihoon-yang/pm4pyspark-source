@@ -48,9 +48,9 @@ def import_sparkdf_from_path(path, sep=None, quote=None, header=None, inferSchem
 
     if sort and sort_field:
         if ascending is True:
-            spark_df = spark_df.orderBy("time:timestamp")
+            spark_df = spark_df.orderBy(sort_field)
         else:
-            spark_df = spark_df.orderBy("time:timestamp", ascending=False)
+            spark_df = spark_df.orderBy(sort_field, ascending=False)
 
     return spark_df
 

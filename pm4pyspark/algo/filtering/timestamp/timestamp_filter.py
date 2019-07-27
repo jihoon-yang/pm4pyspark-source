@@ -22,7 +22,7 @@ def filter_traces_contained(df, dt1, dt2, parameters=None):
         PARAMETER_CONSTANT_CASEID_KEY] if PARAMETER_CONSTANT_CASEID_KEY in parameters else CASE_CONCEPT_NAME
     dt1 = get_dt_from_string(dt1)
     dt2 = get_dt_from_string(dt2)
-    df_converted = importer.convert_timestamp_to_utc_in_df(df)
+    df_converted = importer.convert_timestamp_to_utc_in_df(df, timest_columns={timestamp_key})
     df_ordered = df_converted.orderBy(case_id_glue, timestamp_key)
     w = Window().partitionBy(case_id_glue).orderBy(timestamp_key)
     w2 = Window().partitionBy(case_id_glue).orderBy(F.desc(timestamp_key))
@@ -47,7 +47,7 @@ def filter_traces_intersecting(df, dt1, dt2, parameters=None):
         PARAMETER_CONSTANT_CASEID_KEY] if PARAMETER_CONSTANT_CASEID_KEY in parameters else CASE_CONCEPT_NAME
     dt1 = get_dt_from_string(dt1)
     dt2 = get_dt_from_string(dt2)
-    df_converted = importer.convert_timestamp_to_utc_in_df(df)
+    df_converted = importer.convert_timestamp_to_utc_in_df(df, timest_columns={timestamp_key})
     df_ordered = df_converted.orderBy(case_id_glue, timestamp_key)
     w = Window().partitionBy(case_id_glue).orderBy(timestamp_key)
     w2 = Window().partitionBy(case_id_glue).orderBy(F.desc(timestamp_key))

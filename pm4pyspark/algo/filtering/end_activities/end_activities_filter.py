@@ -87,8 +87,7 @@ def get_end_activities(df, parameters=None):
     # Using join operation
     grouped_df = grouped_df.agg(F.max(timestamp_key).alias(timestamp_key))
     df_end = df.join(F.broadcast(grouped_df), grouped_df.columns)
-    rdd_end = df_end.rdd.map(lambda row: row.asDict())
-    rdd_end = rdd_end.map(lambda event: (event[activity_key], 1)).reduceByKey(lambda x, y : x + y)
+    rdd_end = df_end.rdd.map(lambda event: (event[activity_key], 1)).reduceByKey(lambda x, y : x + y)
 
     return rdd_end.collectAsMap()
 

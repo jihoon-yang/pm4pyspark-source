@@ -80,9 +80,7 @@ def get_start_activities(df, parameters=None):
     # Using join operation
     grouped_df = grouped_df.agg(F.min(timestamp_key).alias(timestamp_key))
     df_start = df.join(F.broadcast(grouped_df), grouped_df.columns)
-
-    rdd_start = df_start.rdd.map(lambda row: row.asDict())
-    rdd_start = rdd_start.map(lambda event: (event[activity_key], 1)).reduceByKey(lambda x, y : x + y)
+    rdd_start = df_start.rdd.map(lambda event: (event[activity_key], 1)).reduceByKey(lambda x, y : x + y)
 
     return rdd_start.collectAsMap()
 
