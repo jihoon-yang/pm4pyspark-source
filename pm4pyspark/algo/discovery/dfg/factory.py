@@ -2,7 +2,7 @@ from pm4py import util as pmutil
 from pm4py.objects.log.util import general as log_util
 from pm4py.objects.log.util import xes as xes_util
 
-from pm4pyspark.dfg import df_statistics
+from pm4pyspark.algo.discovery.dfg import df_statistics
 from pm4pyspark.importer.csv import spark_df_imp as importer
 
 
