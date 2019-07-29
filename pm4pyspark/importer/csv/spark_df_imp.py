@@ -1,4 +1,5 @@
 import datetime
+import pyspark
 import pyspark.sql.functions as F
 
 from dateutil import parser, tz
@@ -27,23 +28,28 @@ def convert_timestamp_to_utc_in_df(df, timest_columns=None):
     return df
 
 
-def import_sparkdf_from_path_wo_timeconversion(path, sep=None, quote=None, header=None, inferSchema=None):
+def import_sparkdf_from_path_wo_timeconversion(path, sep=None, quote=None, header=None, inferSchema=None, numPartition=3):
     """Imports a Spark DataFrame from the given path of CSV format file (without time conversion)
     """
+    ''
+    spark = (SparkSession.
+             builder.
+             master('local[*]').
+             config('spark.sql.shuffle.partitions', numPartition).
+             getOrCreate())
 
-    spark = SparkSession.builder.getOrCreate()
     spark_df = spark.read.csv(path, sep=sep, quote=quote, header=header, inferSchema=inferSchema)
 
     return spark_df
 
 
 def import_sparkdf_from_path(path, sep=None, quote=None, header=None, inferSchema=None, timest_columns=None,
-                             sort=False, sort_field="time:timestamp", ascending=True):
+                             sort=False, sort_field="time:timestamp", ascending=True, numPartition=3):
     """Imports a Spark DataFrame from the given path of CSV format file (with time conversion)
     """
 
     spark_df = import_sparkdf_from_path_wo_timeconversion(path, sep=sep, quote=quote, header=header,
-                                                          inferSchema=inferSchema)
+                                                          inferSchema=inferSchema, numPartition=numPartition)
     spark_df = convert_timestamp_to_utc_in_df(spark_df, timest_columns=timest_columns)
 
     if sort and sort_field:
@@ -86,10 +92,12 @@ def import_event_stream(path, parameters=None):
         sort_field = parameters["sort_field"]
     if "ascending" in parameters:
         ascending = parameters["ascending"]
+    if "numPartition" in parameters:
+        numPartition = parameters["numPartition"]
 
     spark_df = import_sparkdf_from_path(path, sep=sep, quote=quote, header=header, inferSchema=inferSchema,
                                         timest_columns=timest_columns, sort=sort, sort_field=sort_field,
-                                        ascending=ascending)
+                                        ascending=ascending, numPartition=numPartition)
     rdd = spark_df.rdd.map(lambda row: row.asDict())
     event_stream = rdd.collect()
     event_stream = log_instance.EventStream(event_stream, attributes={'origin': 'csv'})
