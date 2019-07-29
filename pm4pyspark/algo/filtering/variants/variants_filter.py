@@ -49,12 +49,13 @@ def apply(df, admitted_variants, parameters=None):
     variants_df = parameters["variants_df"] if "variants_df" in parameters else get_variants_df(df,
                                                                                                 parameters=parameters)
     variants_df = variants_df.filter(variants_df["variant"].isin(admitted_variants))
-    filtered_index = variants_df.select(variants_df[case_id_glue]).rdd.map(lambda x: x[0]).collect()
+    variants_df = variants_df.groupBy(case_id_glue).count()
 
     if positive:
-        return df.filter(df[case_id_glue].isin(filtered_index))
+        return df.join(F.broadcast(variants_df), case_id_glue).drop("count")
     else:
-        return df.filter(~df[case_id_glue].isin(filtered_index))
+        df_left_joined = df.join(F.broadcast(variants_df), case_id_glue, "left")
+        return df_left_joined.filter(df_left_joined["count"].isNull()).drop("count")
 
 
 def get_variant_statistics(df, parameters=None):

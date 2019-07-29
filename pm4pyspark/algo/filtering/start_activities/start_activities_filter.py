@@ -97,7 +97,8 @@ def filter_df_on_start_activities(df, values, timestamp_key=DEFAULT_TIMESTAMP_KE
     grouped_df = grouped_df.agg(F.min(timestamp_key).alias(timestamp_key))
     df_start = df.join(F.broadcast(grouped_df), grouped_df.columns)
     df_start = df_start.filter(df_start[activity_key].isin(values))
-    filtered_index = df_start.select(grouped_df.columns[0]).rdd.map(lambda x: x[0]).collect()
+    df_start = df_start.groupBy(grouped_df.columns[0]).count()
+    #filtered_index = df_start.select(grouped_df.columns[0]).rdd.map(lambda x: x[0]).collect()
 
     # Using with Window function (PROB: cannot handle with the given grouped_df)
     #w = Window().partitionBy(case_id_glue).orderBy(timestamp_key)
@@ -107,8 +108,11 @@ def filter_df_on_start_activities(df, values, timestamp_key=DEFAULT_TIMESTAMP_KE
     #filtered_index = df_start.select(case_id_glue).rdd.map(lambda x: x[0]).collect()
 
     if positive:
-        return df.filter(df[grouped_df.columns[0]].isin(filtered_index))
-    return df.filter(~df[grouped_df.columns[0]].isin(filtered_index))
+        return df.join(F.broadcast(df_start), grouped_df.columns[0]).drop("count")
+    else:
+        df_left_joined = df.join(F.broadcast(df_start), grouped_df.columns[0], "left")
+        return df_left_joined.filter(df_left_joined["count"].isNull()).drop("count")
+
 
 
 def filter_df_on_start_activities_nocc(df, nocc, sa_count0=None, timestamp_key=DEFAULT_TIMESTAMP_KEY,
@@ -133,6 +137,6 @@ def filter_df_on_start_activities_nocc(df, nocc, sa_count0=None, timestamp_key=D
     df_start = df.join(F.broadcast(grouped_df), grouped_df.columns)
     if len(sa_count) < len(sa_count0):
         df_start = df_start.filter(df_start[activity_key].isin(sa_count))
-        filtered_index = df_start.select(grouped_df.columns[0]).rdd.map(lambda x: x[0]).collect()
-        return df.filter(df[grouped_df.columns[0]].isin(filtered_index))
+        df_start = df_start.groupBy(grouped_df.columns[0]).count()
+        return df.join(F.broadcast(df_start), grouped_df.columns[0]).drop("count")
     return df

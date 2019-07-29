@@ -34,12 +34,13 @@ def apply(df, paths, parameters=None):
     df_reduced_shift = df_reduced_shift.withColumn(attribute_key + "_1", F.lag(attribute_key, -1, 'NaN').over(w))
     stacked_df = df_reduced_shift.withColumn("@@path", F.concat(df_reduced_shift[attribute_key], F.lit(","), df_reduced_shift[attribute_key + "_1"]))
     stacked_df = stacked_df.filter(stacked_df["@@path"].isin(paths))
-    filtered_index = stacked_df.select(stacked_df[case_id_glue]).rdd.map(lambda x: x[0]).collect()
+    stacked_df = stacked_df.groupBy(case_id_glue).count()
 
     if positive:
-        return df.filter(df[case_id_glue].isin(filtered_index))
+        return df.join(F.broadcast(stacked_df), case_id_glue).drop("count")
     else:
-        return df.filter(~df[case_id_glue].isin(filtered_index))
+        df_left_joined = df.join(F.broadcast(stacked_df), case_id_glue, "left")
+        return df_left_joined.filter(df_left_joined["count"].isNull()).drop("count")
 
 
 def apply_auto_filter(df, parameters=None):

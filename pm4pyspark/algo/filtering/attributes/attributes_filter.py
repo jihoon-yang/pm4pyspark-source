@@ -1,3 +1,5 @@
+import pyspark.sql.functions as F
+
 from pm4py.algo.filtering.common.attributes import attributes_common
 from pm4py.algo.filtering.common.filtering_constants import CASE_CONCEPT_NAME, DECREASING_FACTOR
 from pm4py.objects.log.util.xes import DEFAULT_NAME_KEY, DEFAULT_TIMESTAMP_KEY
@@ -36,10 +38,13 @@ def apply_numeric(df, int1, int2, parameters=None):
     positive = parameters["positive"] if "positive" in parameters else True
 
     df_filtered = df.filter(df[attribute_key].between(int1, int2))
-    filtered_index = df_filtered.select(case_id_glue).rdd.map(lambda x: x[0]).collect()
+    df_filtered = df_filtered.groupBy(case_id_glue).count()
+    #filtered_index = df_filtered.select(case_id_glue).rdd.map(lambda x: x[0]).collect()
     if positive:
-        return df.filter(df[case_id_glue].isin(filtered_index))
-    return df.filter(~df[case_id_glue].isin(filtered_index))
+        return df.join(F.broadcast(df_filtered), case_id_glue).drop("count")
+    else:
+        df_left_joined = df.join(F.broadcast(df_filtered), case_id_glue, "left")
+        return df_left_joined.filter(df_left_joined["count"].isNull()).drop("count")
 
 
 def apply_events(df, values, parameters=None):
@@ -107,8 +112,8 @@ def get_attribute_values(df, attribute_key, parameters=None):
     if parameters is None:
         parameters = {}
     str(parameters)
-    rdd_df = df.rdd.map(lambda row: row.asDict())
-    rdd_df = rdd_df.map(lambda event: (event[attribute_key], 1)).reduceByKey(lambda x, y : x + y)
+    rdd_df = df.rdd.map(lambda event: (event[attribute_key], 1)).reduceByKey(lambda x, y : x + y)\
+                                                                .sortBy(lambda x: -x[1])
 
     return rdd_df.collectAsMap()
 
@@ -119,10 +124,12 @@ def filter_df_on_attribute_values(df, values, case_id_glue="case:concept:name", 
     """
 
     df_filtered = df.filter(df[attribute_key].isin(values))
-    filtered_index = df_filtered.select(case_id_glue).rdd.map(lambda x: x[0]).collect()
+    df_filtered = df_filtered.groupBy(case_id_glue).count()
     if positive:
-        return df.filter(df[case_id_glue].isin(filtered_index))
-    return df.filter(~df[case_id_glue].isin(filtered_index))
+        return df.join(F.broadcast(df_filtered), case_id_glue).drop("count")
+    else:
+        df_left_joined = df.join(F.broadcast(df_filtered), case_id_glue, "left")
+        return df_left_joined.filter(df_left_joined["count"].isNull()).drop("count")
 
 
 def filter_df_keeping_activ_exc_thresh(df, thresh, act_count0=None, activity_key="concept:name",
