@@ -139,12 +139,11 @@ def filter_df_on_end_activities_nocc(df, nocc, ea_count0=None, timestamp_key=DEF
                          v >= nocc or (len(most_common_variant) > 0 and k == most_common_variant[-1])}
 
         # Using join operation
-        grouped_df = grouped_df.agg(F.max(timestamp_key).alias(timestamp_key))
-        df_end = df.join(F.broadcast(grouped_df), grouped_df.columns)
         if len(ea_count) < len(ea_count0):
+            grouped_df = grouped_df.agg(F.max(timestamp_key).alias(timestamp_key))
+            df_end = df.join(F.broadcast(grouped_df), grouped_df.columns)
             df_end = df_end.filter(df_end[activity_key].isin(ea_count))
             df_end = df_end.groupBy(grouped_df.columns[0]).count()
-            #filtered_index = df_end.select(grouped_df.columns[0]).rdd.map(lambda x: x[0]).collect()
             if return_dict:
                 return df.join(F.broadcast(df_end), grouped_df.columns[0]).drop("count"), ea_count_dict
             return df.join(F.broadcast(df_end), grouped_df.columns[0]).drop("count")

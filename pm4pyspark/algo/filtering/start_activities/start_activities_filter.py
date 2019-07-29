@@ -133,9 +133,9 @@ def filter_df_on_start_activities_nocc(df, nocc, sa_count0=None, timestamp_key=D
     sa_count = [k for k, v in sa_count0.items() if v >= nocc]
 
     # Using join operation
-    grouped_df = grouped_df.agg(F.min(timestamp_key).alias(timestamp_key))
-    df_start = df.join(F.broadcast(grouped_df), grouped_df.columns)
     if len(sa_count) < len(sa_count0):
+        grouped_df = grouped_df.agg(F.min(timestamp_key).alias(timestamp_key))
+        df_start = df.join(F.broadcast(grouped_df), grouped_df.columns)
         df_start = df_start.filter(df_start[activity_key].isin(sa_count))
         df_start = df_start.groupBy(grouped_df.columns[0]).count()
         return df.join(F.broadcast(df_start), grouped_df.columns[0]).drop("count")
