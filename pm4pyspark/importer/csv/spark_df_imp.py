@@ -22,8 +22,9 @@ def convert_timestamp_to_utc_in_df(df, timest_columns=None):
             utc_zone =  tz.gettz("UTC")
             func = F.udf(lambda x: parser.parse(x).astimezone(utc_zone).isoformat(timespec='milliseconds'), StringType())
             func2 = F.udf(lambda x: datetime.datetime.strptime(''.join(x[:-6].rsplit(':', 0)), '%Y-%m-%dT%H:%M:%S.%f'), TimestampType())
-            df = df.withColumn(col + "_utc", func2(func(df[col])))
-            df = df.drop(col).withColumnRenamed(col + "_utc", col)
+            #df = df.withColumn(col + "_utc", func2(func(df[col])))
+            #df = df.drop(col).withColumnRenamed(col + "_utc", col)
+            df = df.withColumn(col, func2(func(df[col])))
 
     return df
 
@@ -41,6 +42,15 @@ def import_sparkdf_from_path_wo_timeconversion(path, sep=None, quote=None, heade
     spark_df = spark.read.csv(path, sep=sep, quote=quote, header=header, inferSchema=inferSchema)
 
     return spark_df
+
+
+def convert_caseid_column_to_str(df, case_id_glue="case:concept:name"):
+    """Converts Case ID column to StringType
+    """
+    df = df.withColumn(case_id_glue, df[case_id_glue].cast(StringType()))
+
+    return df
+
 
 
 def import_sparkdf_from_path(path, sep=None, quote=None, header=None, inferSchema=None, timest_columns=None,
