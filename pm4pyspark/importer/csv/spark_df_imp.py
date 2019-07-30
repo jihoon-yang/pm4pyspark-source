@@ -5,6 +5,7 @@ import pyspark.sql.functions as F
 from dateutil import parser, tz
 from pm4py.objects.log import log as log_instance
 from pm4py.objects.conversion.log.versions import to_event_log
+from pm4pyspark.importer.csv.constants import DEFAULT_NUM_PARTITION
 from pyspark.sql import SparkSession
 from pyspark.sql.types import *
 
@@ -29,7 +30,7 @@ def convert_timestamp_to_utc_in_df(df, timest_columns=None):
     return df
 
 
-def import_sparkdf_from_path_wo_timeconversion(path, sep=None, quote=None, header=None, inferSchema=None, numPartition=3):
+def import_sparkdf_from_path_wo_timeconversion(path, sep=None, quote=None, header=None, inferSchema=None, numPartition=DEFAULT_NUM_PARTITION):
     """Imports a Spark DataFrame from the given path of CSV format file (without time conversion)
     """
     ''
@@ -54,7 +55,7 @@ def convert_caseid_column_to_str(df, case_id_glue="case:concept:name"):
 
 
 def import_sparkdf_from_path(path, sep=None, quote=None, header=None, inferSchema=None, timest_columns=None,
-                             sort=False, sort_field="time:timestamp", ascending=True, numPartition=3):
+                             sort=False, sort_field="time:timestamp", ascending=True, numPartition=DEFAULT_NUM_PARTITION):
     """Imports a Spark DataFrame from the given path of CSV format file (with time conversion)
     """
 
@@ -83,6 +84,7 @@ def import_event_stream(path, parameters=None):
     sort = True
     sort_field="time:timestamp"
     ascending=True
+    numPartition = DEFAULT_NUM_PARTITION
 
     if parameters is None:
         parameters = {}
