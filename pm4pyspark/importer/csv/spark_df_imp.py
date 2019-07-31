@@ -5,7 +5,7 @@ import pyspark.sql.functions as F
 from dateutil import parser, tz
 from pm4py.objects.log import log as log_instance
 from pm4py.objects.conversion.log.versions import to_event_log
-from pm4pyspark.importer.csv.constants import DEFAULT_NUM_PARTITION
+from pm4pyspark.importer.constants import DEFAULT_NUM_PARTITION
 from pyspark.sql import SparkSession
 from pyspark.sql.types import *
 
@@ -72,40 +72,10 @@ def import_sparkdf_from_path(path, sep=None, quote=None, header=None, inferSchem
     return spark_df
 
 
-def import_event_stream(path, parameters=None):
+def import_event_stream(path, sep=None, quote=None, header=None, inferSchema=True, timest_columns=None, sort=True,
+                        sort_field="time:timestamp", ascending=True, numPartition=DEFAULT_NUM_PARTITION):
     """Imports an `EventStream` from the given path of CSV format file
     """
-
-    sep = None
-    quote = None
-    header = None
-    inferSchema = True
-    timest_columns = None
-    sort = True
-    sort_field="time:timestamp"
-    ascending=True
-    numPartition = DEFAULT_NUM_PARTITION
-
-    if parameters is None:
-        parameters = {}
-    if "sep" in parameters:
-        sep = parameters["sep"]
-    if "quote" in parameters:
-        quote = parameters["quote"]
-    if "header" in parameters:
-        header = parameters["header"]
-    if "inferSchema" in parameters:
-        inferSchema = parameters["inferSchema"]
-    if "timest_columns" in parameters:
-        timest_columns = parameters["timest_columns"]
-    if "sort" in parameters:
-        sort = parameters["sort"]
-    if "sort_field" in parameters:
-        sort_field = parameters["sort_field"]
-    if "ascending" in parameters:
-        ascending = parameters["ascending"]
-    if "numPartition" in parameters:
-        numPartition = parameters["numPartition"]
 
     spark_df = import_sparkdf_from_path(path, sep=sep, quote=quote, header=header, inferSchema=inferSchema,
                                         timest_columns=timest_columns, sort=sort, sort_field=sort_field,
