@@ -89,11 +89,12 @@ def import_event_stream(path, sep=None, quote=None, header=None, inferSchema=Tru
     return event_stream
 
 
-def transform_event_stream_to_event_log(event_stream, include_case_attributes=True, enable_deepcopy=False):
+def transform_event_stream_to_event_log(event_stream, case_glue="case:concept:name", include_case_attributes=True, enable_deepcopy=False):
     """Transforms an `EventStream` to an `EventLog`
     """
 
     log = to_event_log.transform_event_stream_to_event_log(event_stream,
+                                                           case_glue=case_glue,
                                                            include_case_attributes=include_case_attributes,
                                                            enable_deepcopy=enable_deepcopy)
 
