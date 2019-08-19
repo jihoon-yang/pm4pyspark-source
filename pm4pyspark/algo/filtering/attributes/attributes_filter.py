@@ -112,8 +112,9 @@ def get_attribute_values(df, attribute_key, parameters=None):
     if parameters is None:
         parameters = {}
     str(parameters)
-    rdd_df = df.rdd.map(lambda event: (event[attribute_key], 1)).reduceByKey(lambda x, y : x + y)\
-                                                                .sortBy(lambda x: -x[1])
+    df = df.select(attribute_key)
+    rdd_df = df.rdd.map(lambda event: (event[0], 1)).reduceByKey(lambda x, y : x + y)\
+                                                    .sortBy(lambda x: -x[1])
 
     return rdd_df.collectAsMap()
 
