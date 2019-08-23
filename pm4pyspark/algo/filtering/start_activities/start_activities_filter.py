@@ -72,15 +72,8 @@ def get_start_activities(df, parameters=None):
         PARAMETER_CONSTANT_ACTIVITY_KEY] if PARAMETER_CONSTANT_ACTIVITY_KEY in parameters else DEFAULT_NAME_KEY
     grouped_df = parameters[GROUPED_DATAFRAME] if GROUPED_DATAFRAME in parameters else df.groupby(case_id_glue)
 
-    # Using with Window function (PROB: cannot handle with the given grouped_df)
-    #w = Window().partitionBy(case_id_glue).orderBy(timestamp_key)
-    #df_start = df.withColumn("rn", F.row_number().over(w))
-    #df_start = df_start.filter(df_start["rn"] == 1).drop("rn")
-
-    # Using join operation
-    grouped_df = grouped_df.agg(F.min(timestamp_key).alias(timestamp_key))
-    df_start = df.join(F.broadcast(grouped_df), grouped_df.columns)
-    rdd_start = df_start.rdd.map(lambda event: (event[activity_key], 1)).reduceByKey(lambda x, y : x + y)
+    df_start = grouped_df.agg(F.first(activity_key).alias(activity_key)).select(activity_key)
+    rdd_start = df_start.rdd.map(lambda row: (row[0], 1)).reduceByKey(lambda x, y : x + y)
 
     return rdd_start.collectAsMap()
 
@@ -93,26 +86,13 @@ def filter_df_on_start_activities(df, values, timestamp_key=DEFAULT_TIMESTAMP_KE
     if grouped_df is None:
         grouped_df = df.groupby(case_id_glue)
 
-    # Using join operation
-    grouped_df = grouped_df.agg(F.min(timestamp_key).alias(timestamp_key))
-    df_start = df.join(F.broadcast(grouped_df), grouped_df.columns)
-    df_start = df_start.filter(df_start[activity_key].isin(values))
-    df_start = df_start.groupBy(grouped_df.columns[0]).count()
-    #filtered_index = df_start.select(grouped_df.columns[0]).rdd.map(lambda x: x[0]).collect()
-
-    # Using with Window function (PROB: cannot handle with the given grouped_df)
-    #w = Window().partitionBy(case_id_glue).orderBy(timestamp_key)
-    #df_start = df.withColumn("rn", F.row_number().over(w))
-    #df_start = df_start.filter(df_start["rn"] == 1).drop("rn")
-    #df_start = df_start.filter(df_start[activity_key].isin(values))
-    #filtered_index = df_start.select(case_id_glue).rdd.map(lambda x: x[0]).collect()
+    grouped_df = grouped_df.agg(F.first(activity_key).alias(activity_key))
+    df_start = grouped_df.filter(grouped_df[activity_key].isin(values))
 
     if positive:
-        return df.join(F.broadcast(df_start), grouped_df.columns[0]).drop("count")
+        return df.join(F.broadcast(df_start), grouped_df.columns[0])
     else:
-        df_left_joined = df.join(F.broadcast(df_start), grouped_df.columns[0], "left")
-        return df_left_joined.filter(df_left_joined["count"].isNull()).drop("count")
-
+        return df.join(F.broadcast(df_start), grouped_df.columns[0], "leftanti")
 
 
 def filter_df_on_start_activities_nocc(df, nocc, sa_count0=None, timestamp_key=DEFAULT_TIMESTAMP_KEY,
@@ -132,11 +112,8 @@ def filter_df_on_start_activities_nocc(df, nocc, sa_count0=None, timestamp_key=D
         sa_count0 = get_start_activities(df, parameters=parameters)
     sa_count = [k for k, v in sa_count0.items() if v >= nocc]
 
-    # Using join operation
     if len(sa_count) < len(sa_count0):
-        grouped_df = grouped_df.agg(F.min(timestamp_key).alias(timestamp_key))
-        df_start = df.join(F.broadcast(grouped_df), grouped_df.columns)
-        df_start = df_start.filter(df_start[activity_key].isin(sa_count))
-        df_start = df_start.groupBy(grouped_df.columns[0]).count()
-        return df.join(F.broadcast(df_start), grouped_df.columns[0]).drop("count")
+        grouped_df = grouped_df.agg(F.first(activity_key).alias(activity_key))
+        df_start = grouped_df.filter(grouped_df[activity_key].isin(sa_count))
+        return df.join(F.broadcast(df_start), grouped_df.columns[0])
     return df

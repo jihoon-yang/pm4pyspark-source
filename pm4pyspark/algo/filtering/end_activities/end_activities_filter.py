@@ -84,10 +84,8 @@ def get_end_activities(df, parameters=None):
         PARAMETER_CONSTANT_ACTIVITY_KEY] if PARAMETER_CONSTANT_ACTIVITY_KEY in parameters else DEFAULT_NAME_KEY
     grouped_df = parameters[GROUPED_DATAFRAME] if GROUPED_DATAFRAME in parameters else df.groupby(case_id_glue)
 
-    # Using join operation
-    grouped_df = grouped_df.agg(F.max(timestamp_key).alias(timestamp_key))
-    df_end = df.join(F.broadcast(grouped_df), grouped_df.columns)
-    rdd_end = df_end.rdd.map(lambda event: (event[activity_key], 1)).reduceByKey(lambda x, y : x + y)
+    df_end = grouped_df.agg(F.last(activity_key).alias(activity_key)).select(activity_key)
+    rdd_end = df_end.rdd.map(lambda row: (row[0], 1)).reduceByKey(lambda x, y : x + y)
 
     return rdd_end.collectAsMap()
 
@@ -100,17 +98,13 @@ def filter_df_on_end_activities(df, values, timestamp_key=DEFAULT_TIMESTAMP_KEY,
     if grouped_df is None:
         grouped_df = df.groupby(case_id_glue)
 
-    # Using join operation
-    grouped_df = grouped_df.agg(F.max(timestamp_key).alias(timestamp_key))
-    df_end = df.join(F.broadcast(grouped_df), grouped_df.columns)
-    df_end = df_end.filter(df_end[activity_key].isin(values))
-    df_end = df_end.groupBy(grouped_df.columns[0]).count()
+    grouped_df = grouped_df.agg(F.last(activity_key).alias(activity_key))
+    df_end = grouped_df.filter(grouped_df[activity_key].isin(values))
 
     if positive:
-        return df.join(F.broadcast(df_end), grouped_df.columns[0]).drop("count")
+        return df.join(F.broadcast(df_end), grouped_df.columns[0])
     else:
-        df_left_joined = df.join(F.broadcast(df_end), grouped_df.columns[0], "left")
-        return df_left_joined.filter(df_left_joined["count"].isNull()).drop("count")
+        return df.join(F.broadcast(df_end), grouped_df.columns[0], "leftanti")
 
 
 def filter_df_on_end_activities_nocc(df, nocc, ea_count0=None, timestamp_key=DEFAULT_TIMESTAMP_KEY,
@@ -140,13 +134,11 @@ def filter_df_on_end_activities_nocc(df, nocc, ea_count0=None, timestamp_key=DEF
 
         # Using join operation
         if len(ea_count) < len(ea_count0):
-            grouped_df = grouped_df.agg(F.max(timestamp_key).alias(timestamp_key))
-            df_end = df.join(F.broadcast(grouped_df), grouped_df.columns)
-            df_end = df_end.filter(df_end[activity_key].isin(ea_count))
-            df_end = df_end.groupBy(grouped_df.columns[0]).count()
+            grouped_df = grouped_df.agg(F.last(activity_key).alias(activity_key))
+            df_end = grouped_df.filter(grouped_df[activity_key].isin(ea_count))
             if return_dict:
-                return df.join(F.broadcast(df_end), grouped_df.columns[0]).drop("count"), ea_count_dict
-            return df.join(F.broadcast(df_end), grouped_df.columns[0]).drop("count")
+                return df.join(F.broadcast(df_end), grouped_df.columns[0]), ea_count_dict
+            return df.join(F.broadcast(df_end), grouped_df.columns[0])
         if return_dict:
             return df, ea_count_dict
     return df

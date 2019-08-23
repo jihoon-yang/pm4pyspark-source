@@ -13,8 +13,9 @@ def filter_on_ncases(df, case_id_glue="case:concept:name", max_no_cases=1000):
     #return df.filter(df[case_id_glue].isin(cases_to_keep))
 
     #Without conversion to RDD (better).
-    grouped_df = df.groupBy(case_id_glue).count().limit(max_no_cases)
-    return df.join(F.broadcast(grouped_df), case_id_glue).drop("count")
+    grouped_df = df.groupBy(case_id_glue).count().limit(max_no_cases).drop("count")
+
+    return df.join(F.broadcast(grouped_df), case_id_glue)
 
 
 def filter_on_case_size(df, case_id_glue="case:concept:name", min_case_size=2, max_case_size=None):
@@ -34,21 +35,14 @@ def filter_on_case_performance(df, case_id_glue="case:concept:name", timestamp_k
     """Filters the Spark dataframe on case performance
     """
 
-    ordered_df = df.orderBy(timestamp_key).select(case_id_glue, timestamp_key)
-    grouped_df = ordered_df.groupby(case_id_glue)
+    grouped_df = df.groupby(case_id_glue)
+    start_end_df = grouped_df.agg(F.min(timestamp_key).alias(timestamp_key), F.max(timestamp_key).alias(timestamp_key+"_1"))
 
-    start_df = grouped_df.agg(F.min(timestamp_key).alias(timestamp_key))
-    first_eve_df = ordered_df.join(F.broadcast(start_df), start_df.columns)
-    end_df = grouped_df.agg(F.max(timestamp_key).alias(timestamp_key))
-    last_eve_df = ordered_df.join(F.broadcast(end_df), end_df.columns)
-    last_eve_df = last_eve_df.withColumnRenamed(timestamp_key, timestamp_key+"_2")
+    start_end_df = start_end_df.withColumn("caseDuration", F.unix_timestamp(start_end_df[timestamp_key+"_1"]) - F.unix_timestamp(start_end_df[timestamp_key]))
+    start_end_df = start_end_df.filter((start_end_df["caseDuration"] > min_case_performance) & (start_end_df["caseDuration"] < max_case_performance))\
+                               .select(case_id_glue)
 
-    stacked_df = first_eve_df.join(last_eve_df, case_id_glue)
-    stacked_df = stacked_df.withColumn("caseDuration", F.unix_timestamp(stacked_df[timestamp_key+"_2"]) - F.unix_timestamp(stacked_df[timestamp_key]))
-    stacked_df = stacked_df.filter((stacked_df["caseDuration"] > min_case_performance) & (stacked_df["caseDuration"] < max_case_performance))
-    stacked_df = stacked_df.select(case_id_glue)
-
-    return df.join(F.broadcast(stacked_df), case_id_glue)
+    return df.join(F.broadcast(start_end_df), case_id_glue)
 
 
 def apply(df, parameters=None):

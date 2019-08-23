@@ -6,6 +6,7 @@ from pm4py.statistics.traces.common import case_duration as case_duration_common
 from pm4py.util.constants import PARAMETER_CONSTANT_TIMESTAMP_KEY
 from pm4py.util.constants import PARAMETER_CONSTANT_ACTIVITY_KEY
 from pm4py.util.constants import PARAMETER_CONSTANT_CASEID_KEY
+from pyspark.sql.window import Window
 
 
 
@@ -49,13 +50,11 @@ def apply(df, admitted_variants, parameters=None):
     variants_df = parameters["variants_df"] if "variants_df" in parameters else get_variants_df(df,
                                                                                                 parameters=parameters)
     variants_df = variants_df.filter(variants_df["variant"].isin(admitted_variants))
-    variants_df = variants_df.groupBy(case_id_glue).count()
 
     if positive:
-        return df.join(F.broadcast(variants_df), case_id_glue).drop("count")
+        return df.join(F.broadcast(variants_df), case_id_glue)
     else:
-        df_left_joined = df.join(F.broadcast(variants_df), case_id_glue, "left")
-        return df_left_joined.filter(df_left_joined["count"].isNull()).drop("count")
+        return df.join(F.broadcast(variants_df), case_id_glue, "leftanti")
 
 
 def get_variant_statistics(df, parameters=None):
@@ -170,8 +169,11 @@ def get_variants_df(df, parameters=None):
     activity_key = parameters[
         PARAMETER_CONSTANT_ACTIVITY_KEY] if PARAMETER_CONSTANT_ACTIVITY_KEY in parameters else DEFAULT_NAME_KEY
 
-    ordered_df = df.orderBy(case_id_glue, timestamp_key)
-    grouped_df = ordered_df.groupby(case_id_glue).agg(F.collect_list(activity_key).alias("variant"))
+    df = df.select(case_id_glue, activity_key)
+    grouped_df = df.withColumn("@@id", F.monotonically_increasing_id())\
+        .groupBy(case_id_glue)\
+        .agg(F.collect_list(F.struct("@@id", activity_key)).alias("variant"))\
+        .select(case_id_glue, F.sort_array("variant").getItem(activity_key).alias("variant"))
     grouped_df = grouped_df.withColumn("variant", F.concat_ws(",", "variant"))
 
     return grouped_df

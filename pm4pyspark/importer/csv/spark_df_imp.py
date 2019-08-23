@@ -39,6 +39,7 @@ def import_sparkdf_from_path_wo_timeconversion(path, sep=None, quote=None, heade
              master('local[*]').
              config('spark.sql.shuffle.partitions', numPartition).
              getOrCreate())
+    sc = spark.sparkContext
 
     spark_df = spark.read.csv(path, sep=sep, quote=quote, header=header, inferSchema=inferSchema)
 
