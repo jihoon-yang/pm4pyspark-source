@@ -98,11 +98,11 @@ def filter_df_on_end_activities(df, values, timestamp_key=DEFAULT_TIMESTAMP_KEY,
     if grouped_df is None:
         grouped_df = df.groupby(case_id_glue)
 
-    grouped_df = grouped_df.agg(F.last(activity_key).alias(activity_key))
-    df_end = grouped_df.filter(grouped_df[activity_key].isin(values))
+    grouped_df = grouped_df.agg(F.last(activity_key).alias(activity_key+"_1"))
+    df_end = grouped_df.filter(grouped_df[activity_key+"_1"].isin(values))
 
     if positive:
-        return df.join(F.broadcast(df_end), grouped_df.columns[0])
+        return df.join(F.broadcast(df_end), grouped_df.columns[0]).drop(activity_key+"_1")
     else:
         return df.join(F.broadcast(df_end), grouped_df.columns[0], "leftanti")
 
@@ -134,10 +134,10 @@ def filter_df_on_end_activities_nocc(df, nocc, ea_count0=None, timestamp_key=DEF
 
         # Using join operation
         if len(ea_count) < len(ea_count0):
-            grouped_df = grouped_df.agg(F.last(activity_key).alias(activity_key))
-            df_end = grouped_df.filter(grouped_df[activity_key].isin(ea_count))
+            grouped_df = grouped_df.agg(F.last(activity_key).alias(activity_key+"_1"))
+            df_end = grouped_df.filter(grouped_df[activity_key+"_1"].isin(ea_count))
             if return_dict:
-                return df.join(F.broadcast(df_end), grouped_df.columns[0]), ea_count_dict
+                return df.join(F.broadcast(df_end), grouped_df.columns[0]).drop(activity_key+"_1"), ea_count_dict
             return df.join(F.broadcast(df_end), grouped_df.columns[0])
         if return_dict:
             return df, ea_count_dict

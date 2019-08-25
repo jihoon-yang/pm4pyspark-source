@@ -86,11 +86,11 @@ def filter_df_on_start_activities(df, values, timestamp_key=DEFAULT_TIMESTAMP_KE
     if grouped_df is None:
         grouped_df = df.groupby(case_id_glue)
 
-    grouped_df = grouped_df.agg(F.first(activity_key).alias(activity_key))
-    df_start = grouped_df.filter(grouped_df[activity_key].isin(values))
+    grouped_df = grouped_df.agg(F.first(activity_key).alias(activity_key+"_1"))
+    df_start = grouped_df.filter(grouped_df[activity_key+"_1"].isin(values))
 
     if positive:
-        return df.join(F.broadcast(df_start), grouped_df.columns[0])
+        return df.join(F.broadcast(df_start), grouped_df.columns[0]).drop(activity_key+"_1")
     else:
         return df.join(F.broadcast(df_start), grouped_df.columns[0], "leftanti")
 
@@ -113,7 +113,7 @@ def filter_df_on_start_activities_nocc(df, nocc, sa_count0=None, timestamp_key=D
     sa_count = [k for k, v in sa_count0.items() if v >= nocc]
 
     if len(sa_count) < len(sa_count0):
-        grouped_df = grouped_df.agg(F.first(activity_key).alias(activity_key))
-        df_start = grouped_df.filter(grouped_df[activity_key].isin(sa_count))
-        return df.join(F.broadcast(df_start), grouped_df.columns[0])
+        grouped_df = grouped_df.agg(F.first(activity_key).alias(activity_key+"_1"))
+        df_start = grouped_df.filter(grouped_df[activity_key+"_1"].isin(sa_count))
+        return df.join(F.broadcast(df_start), grouped_df.columns[0]).drop(activity_key+"_1")
     return df
