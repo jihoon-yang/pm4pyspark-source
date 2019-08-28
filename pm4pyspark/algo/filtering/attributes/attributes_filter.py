@@ -129,8 +129,7 @@ def filter_df_on_attribute_values(df, values, case_id_glue="case:concept:name", 
     if positive:
         return df.join(F.broadcast(df_filtered), case_id_glue).drop("count")
     else:
-        df_left_joined = df.join(F.broadcast(df_filtered), case_id_glue, "left")
-        return df_left_joined.filter(df_left_joined["count"].isNull()).drop("count")
+        return df.join(F.broadcast(df_filtered), case_id_glue, "leftanti")
 
 
 def filter_df_keeping_activ_exc_thresh(df, thresh, act_count0=None, activity_key="concept:name",
