@@ -1,4 +1,4 @@
-# Big Data Process Mining in Python <br/> <span style="font-size:0.7em">Integration of Spark in PM4PY for Preprocessing Event Data and Discover Process Models </span>
+# Big Data Process Mining in Python <br/> <span style="font-size:0.5em">Integration of Spark in PM4PY for Preprocessing Event Data and Discover Process Models </span>
 
 
 [PM4Py](https://github.com/pm4py) is the Process Mining library in Python and it aims at seamless integration with any kind of databases and technology.
