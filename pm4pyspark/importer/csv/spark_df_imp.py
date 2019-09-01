@@ -33,13 +33,12 @@ def convert_timestamp_to_utc_in_df(df, timest_columns=None):
 def import_sparkdf_from_path_wo_timeconversion(path, sep=None, quote=None, header=None, inferSchema=None, numPartition=DEFAULT_NUM_PARTITION):
     """Imports a Spark DataFrame from the given path of CSV format file (without time conversion)
     """
-    ''
+
     spark = (SparkSession.
              builder.
              master('local[*]').
              config('spark.sql.shuffle.partitions', numPartition).
              getOrCreate())
-    sc = spark.sparkContext
 
     spark_df = spark.read.csv(path, sep=sep, quote=quote, header=header, inferSchema=inferSchema)
 
@@ -49,6 +48,7 @@ def import_sparkdf_from_path_wo_timeconversion(path, sep=None, quote=None, heade
 def convert_caseid_column_to_str(df, case_id_glue="case:concept:name"):
     """Converts Case ID column to StringType
     """
+
     df = df.withColumn(case_id_glue, df[case_id_glue].cast(StringType()))
 
     return df
