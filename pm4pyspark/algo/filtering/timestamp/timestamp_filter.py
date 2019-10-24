@@ -57,8 +57,10 @@ def filter_traces_intersecting(df, dt1, dt2, parameters=None):
     stacked = df_ordered.withColumn(timestamp_key + "_last", F.max(df_ordered[timestamp_key]).over(w2))
     stacked = stacked.withColumn(timestamp_key + "_first", F.min(stacked[timestamp_key]).over(w))
 
-    stacked1 = stacked.filter(stacked[timestamp_key + "_first"].between(dt1, dt2))
-    stacked2 = stacked.filter(stacked[timestamp_key + "_last"].between(dt1, dt2))
+    #stacked1 = stacked.filter(stacked[timestamp_key + "_first"].between(dt1, dt2))
+    stacked1 = stacked.filter((stacked[timestamp_key + "_first"] > dt1) & (stacked[timestamp_key + "_first"] < dt2))
+    #stacked2 = stacked.filter(stacked[timestamp_key + "_last"].between(dt1, dt2))
+    stacked2 = stacked.filter((stacked[timestamp_key + "_last"] > dt1) & (stacked[timestamp_key + "_last"] < dt2))
     stacked3 = stacked.filter(stacked[timestamp_key + "_first"] < dt1)
     stacked3 = stacked3.filter(stacked3[timestamp_key + "_last"] > dt2)
 
